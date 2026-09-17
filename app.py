@@ -24,17 +24,18 @@ st.markdown("""
 Upload an **Ocean Bill of Lading (B/L)**, **Commercial Invoice**, or **Packing List** to audit cargo discrepancies, weight balances, and Incoterm liabilities.
 """)
 
+# Persistent Session State Initialization
+if "doc_text" not in st.session_state:
+    st.session_state.doc_text = ""
+
 # Sidebar API Setup
 st.sidebar.header("🔑 Authentication")
 api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
 
-# Test Sample Generator (For Instant Auditing)
 st.sidebar.markdown("---")
 st.sidebar.subheader("📋 Load Sample B/L")
-use_sample = st.sidebar.button("Load Discrepancy Test Sample")
 
-sample_bl_text = """
-BILL OF LADING FOR OCEAN TRANSPORT
+sample_bl_text = """BILL OF LADING FOR OCEAN TRANSPORT
 B/L NUMBER: MSCU-BOM-982341
 CARRIER: Mediterranean Shipping Company (MSC)
 VESSEL / VOYAGE: MSC CLARA / V.2408W
@@ -64,8 +65,10 @@ Measurement: 48.50 CBM
 FREIGHT & CLAUSES:
 Freight Prepaid.
 Clean on Board date: 14-SEPT-2026.
-Note on packing: 1 crate found with outer strap seal compromised prior to container loading.
-"""
+Note on packing: 1 crate found with outer strap seal compromised prior to container loading."""
+
+if st.sidebar.button("Load Discrepancy Test Sample"):
+    st.session_state.doc_text = sample_bl_text
 
 uploaded_file = st.file_uploader("Upload Shipping Document (PDF)", type=["pdf"])
 
@@ -78,20 +81,17 @@ def extract_text(file):
             extracted += text + "\n"
     return extracted
 
-document_text = ""
 if uploaded_file:
-    document_text = extract_text(uploaded_file)
-elif use_sample:
-    document_text = sample_bl_text
+    st.session_state.doc_text = extract_text(uploaded_file)
 
-if document_text:
+if st.session_state.doc_text:
     st.success("Document loaded successfully into memory.")
     
     col1, col2 = st.columns([1, 1])
     
     with col1:
         st.subheader("📄 Raw Shipping Document Text")
-        st.text_area("Extracted Cargo Text", document_text, height=450)
+        st.text_area("Extracted Cargo Text", st.session_state.doc_text, height=450)
         
     with col2:
         st.subheader("🔍 Automated Trade Compliance Audit")
@@ -100,17 +100,16 @@ if document_text:
             if not api_key:
                 st.error("Please enter your Gemini API Key in the left sidebar to proceed.")
             else:
-                with st.spinner("Analyzing shipping data, container integrity, and trade compliance..."):
+                with st.spinner("Auditing trade parameters, packaging clauses, and compliance..."):
                     try:
                         client = genai.Client(api_key=api_key)
-                        
                         prompt = f"""
 You are an expert Ocean Freight Documentation Specialist, Customs Broker, and Logistics Auditor.
 Conduct a rigorous customs & operations audit on this shipping document:
 
 Shipping Document:
 \"\"\"
-{document_text}
+{st.session_state.doc_text}
 \"\"\"
 
 Produce your findings strictly in the following Markdown format:
@@ -130,10 +129,10 @@ Produce your findings strictly in the following Markdown format:
 | Incoterm (2020) | ... | ... |
 
 ### 3. Discrepancy & Risk Detection
-- Identify any discrepancies, cargo condition remarks (e.g. compromised seals or packaging), weight ratio sanity, or clause compliance issues.
+- Identify discrepancies, cargo condition remarks (e.g., compromised packaging/seals), weight ratio sanity, or clause issues.
 
 ### 4. Customs Clearance Verdict
-- Give an explicit verdict: `[🟢 READY FOR CLEARANCE]`, `[🟡 ACTION REQUIRED]`, or `[🔴 SHIPMENT HOLD / CRITICAL DISCREPANCY]`.
+- Explicit verdict: `[🟢 READY FOR CLEARANCE]`, `[🟡 ACTION REQUIRED]`, or `[🔴 SHIPMENT HOLD / CRITICAL DISCREPANCY]`.
 - List 2 to 3 actionable next steps for the freight operations coordinator.
 """
                         response = client.models.generate_content(
