@@ -9,7 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom Styling
 st.markdown("""
     <style>
     .main { background-color: #0b1120; }
@@ -24,11 +23,9 @@ st.markdown("""
 Upload an **Ocean Bill of Lading (B/L)**, **Commercial Invoice**, or **Packing List** to audit cargo discrepancies, weight balances, and Incoterm liabilities.
 """)
 
-# Persistent Session State Initialization
 if "doc_text" not in st.session_state:
     st.session_state.doc_text = ""
 
-# Sidebar API Setup
 st.sidebar.header("🔑 Authentication")
 api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
 
@@ -135,10 +132,10 @@ Produce your findings strictly in the following Markdown format:
 - Explicit verdict: `[🟢 READY FOR CLEARANCE]`, `[🟡 ACTION REQUIRED]`, or `[🔴 SHIPMENT HOLD / CRITICAL DISCREPANCY]`.
 - List 2 to 3 actionable next steps for the freight operations coordinator.
 """
-                       response = client.models.generate_content(
-    model='gemini-3.6-flash',
-    contents=prompt,
-)
+                        response = client.models.generate_content(
+                            model='gemini-3.6-flash',
+                            contents=prompt,
+                        )
                         st.markdown(response.text)
                     except Exception as e:
                         st.error(f"Execution Error: {str(e)}")
