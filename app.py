@@ -135,10 +135,10 @@ Produce your findings strictly in the following Markdown format:
 - Explicit verdict: `[🟢 READY FOR CLEARANCE]`, `[🟡 ACTION REQUIRED]`, or `[🔴 SHIPMENT HOLD / CRITICAL DISCREPANCY]`.
 - List 2 to 3 actionable next steps for the freight operations coordinator.
 """
-                        response = client.models.generate_content(
-                            model='gemini-2.5-flash',
-                            contents=prompt,
-                        )
+                       response = client.models.generate_content(
+    model='gemini-3.6-flash',
+    contents=prompt,
+)
                         st.markdown(response.text)
                     except Exception as e:
                         st.error(f"Execution Error: {str(e)}")
