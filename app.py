@@ -23,14 +23,14 @@ st.markdown("""
 Upload an **Ocean Bill of Lading (B/L)**, **Commercial Invoice**, or **Packing List** to audit cargo discrepancies, weight balances, and Incoterm liabilities.
 """)
 
+# Load API key securely from Streamlit Secrets or Environment
+api_key = st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
+
 if "doc_text" not in st.session_state:
     st.session_state.doc_text = ""
 
-st.sidebar.header("🔑 Authentication")
-api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("📋 Load Sample B/L")
+st.sidebar.header("📋 Controls")
+st.sidebar.markdown("Click below to test the compliance engine with a real-world ocean shipping document containing hidden discrepancies.")
 
 sample_bl_text = """BILL OF LADING FOR OCEAN TRANSPORT
 B/L NUMBER: MSCU-BOM-982341
@@ -95,7 +95,7 @@ if st.session_state.doc_text:
         
         if st.button("🚀 Run Live Audit & Compliance Check", use_container_width=True):
             if not api_key:
-                st.error("Please enter your Gemini API Key in the left sidebar to proceed.")
+                st.error("API Key configuration error. Please ensure GEMINI_API_KEY is configured in Streamlit Secrets.")
             else:
                 with st.spinner("Auditing trade parameters, packaging clauses, and compliance..."):
                     try:
